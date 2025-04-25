@@ -56,8 +56,17 @@ void buildWord(
         buildWord(currentWord, input, floatingLetters, dict, resultSet, currentIndex + 1);
         return;
     }
+
+    // Pruning
+    int dashesLeft = 0;
+    for(size_t i = currentIndex; i < input.length(); ++i){
+      if(currentWord[i] == '-'){
+        dashesLeft ++;
+      }
+    }
+
     // Case where current letter is a "-", meaning we have to search for valid letters
-    else{
+    if(currentWord[currentIndex] == '-'){
         
         for(char c = 'a'; c <= 'z'; ++c){
             size_t position = floatingLetters.find(c);
@@ -66,12 +75,18 @@ void buildWord(
             std::string floatingCopy = floatingLetters;
             if(position != std::string::npos){
                 floatingCopy.erase(position, 1);
+                currentWord[currentIndex] = c;
+                buildWord(currentWord, input, floatingCopy, dict, resultSet, currentIndex + 1);
+                currentWord[currentIndex] = '-'; // Backtracking
             }
             
-            // Place c in the word and recurse
-            currentWord[currentIndex] = c;
-            buildWord(currentWord, input, floatingCopy, dict, resultSet, currentIndex + 1);
-            currentWord[currentIndex] = '-'; // Backtracking
+            // Place c in the word and recurse, including pruning logic
+            else if(floatingLetters.length() < dashesLeft){
+              currentWord[currentIndex] = c;
+              buildWord(currentWord, input, floatingCopy, dict, resultSet, currentIndex + 1);
+              currentWord[currentIndex] = '-';
+            }
+            
         }
     }
 
